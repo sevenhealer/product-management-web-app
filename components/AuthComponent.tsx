@@ -59,7 +59,7 @@ export default function AuthComponent({ authType }: { authType: string }) {
 
 interface Input {
     type: string
-    label: String
+    label: string
     placeholder: string
     onChange: (val: string) => void
 }
