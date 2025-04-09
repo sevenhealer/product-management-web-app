@@ -1,5 +1,5 @@
 import { PrismaClient } from "@/generated/prisma";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
 const client = new PrismaClient();
@@ -12,18 +12,24 @@ function verifyToken(req: NextRequest) {
   return jwt.verify(token, JWT_SECRET);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest) {
   try {
     verifyToken(req);
 
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) return NextResponse.json({ msg: "No ID provided" }, { status: 400 });
+
     const deleted = await client.product.delete({
       where: {
-        id: parseInt(params.id),
+        id: parseInt(id),
       },
     });
 
-    return Response.json({ msg: "Deleted", deleted });
+    return NextResponse.json({ msg: "Deleted", deleted });
   } catch (err) {
-    return Response.json({ msg: "Not Found" }, { status: 401 });
+    console.error(err);
+    return NextResponse.json({ msg: "Unauthorized or Not Found" }, { status: 401 });
   }
 }
